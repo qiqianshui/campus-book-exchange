@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="P3CsAuhLYpDqNV0Ng6zZrF">
+<head data-page-node-id="TBxXsQip5Nu0LdP7WnMqUa">
+<meta charset="UTF-8" data-page-node-id="eAqPpma3HlBQLIL5DJ4KVW">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="Dm8gyYBeAlgzbZDqb2GxXG">
+<title>核心代码逐文件讲解 · 校园二手教材平台</title>
+<style>
+  :root{
+    --bg:#ffffff; --pg:#f6f7f9; --card:#fff; --line:#e6e8eb; --txt:#1c1e21; --mut:#5f6368;
+    --blue:#185fa5; --teal:#0F6E56; --purple:#534AB7; --red:#A32D2D; --amber:#854F0B;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--pg);color:var(--txt);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;font-size:15px}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px}
+  h1{font-size:26px;margin:0 0 6px}
+  h2{font-size:20px;margin:40px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+  h3{font-size:16px;margin:24px 0 8px;color:var(--blue)}
+  p{margin:8px 0}
+  .lead{color:var(--mut);margin-bottom:24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .file{display:inline-block;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;background:#eef1f4;color:#0c447c;border-radius:6px;padding:2px 8px;margin:2px 0}
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;background:#eef1f4;border-radius:4px;padding:1px 5px}
+  pre{background:#0d1117;color:#e6edf3;border-radius:10px;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.55;font-family:"SFMono-Regular",Consolas,monospace}
+  pre .k{color:#ff7b72} pre .s{color:#a5d6ff} pre .c{color:#8b949e} pre .n{color:#79c0ff} pre .m{color:#d2a8ff}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;margin-right:6px;font-weight:500}
+  .tag.jwt{background:#EEEDFE;color:#534AB7} .tag.lay{background:#E1F5EE;color:#0F6E56} .tag.fe{background:#E6F1FB;color:#185fa5}
+  .say{background:#f0f7ff;border-left:4px solid var(--blue);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  .say b{color:var(--blue)}
+  .bug{background:#fdf0f0;border-left:4px solid var(--red);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  .bug b{color:var(--red)}
+  .ok{background:#eef6ec;border-left:4px solid var(--teal);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  ul{margin:8px 0;padding-left:22px} li{margin:4px 0}
+  .nav{position:sticky;top:0;background:rgba(246,247,249,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:8px}
+  .nav a{margin-right:14px;color:var(--blue);text-decoration:none;font-size:14px}
+  .nav a:hover{text-decoration:underline}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+  th{background:#eef1f4}
+  .q{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .q .no{flex:none;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500}
+</style>
+</head>
+<body data-page-node-id="NXG0YvsPhU0s97UEJW5Jya">
+<div class="wrap" data-page-node-id="pvTOeBAhJJyYrwMslPwEo0">
+<div class="nav" data-page-node-id="j1LnG28PDIHfukmK958aMg">
+  <a href="#m1" data-page-node-id="EbiItgorLoV4XYiW9USqPV">① JWT鉴权</a>
+  <a href="#m2" data-page-node-id="GwwTIBJBdp063OCjlmoGqD">② 分层架构</a>
+  <a href="#m3" data-page-node-id="W5chs8RezNfrcBPj7csVCX">③ 前后端联调</a>
+  <a href="#self" data-page-node-id="d4BEduuWEHxF7voZVpXBLx">自测清单</a>
+  <a href="#next" data-page-node-id="wzxmNAJOrM2m1byy5oEroB">练手任务</a>
+</div>
+
+<h1 data-page-node-id="b6VVXpHSQj44bcilvHVCDC">核心代码逐文件讲解</h1>
+<p class="lead" data-page-node-id="Buvrq3cdnBgVwXOJpiHbrH">项目：校园二手教材流转平台 · 后端 Spring Boot 3 + 前端 Vue3。本页按"学长要求 + 考核口径"拆成三块：<b data-page-node-id="tOSa1IJyjNO6Ptr4KX53UA">JWT 鉴权 → 分层架构 → 前后端联调</b>。每块的写法是：这个文件干嘛的 → 核心代码 → 你怎么讲给老师听 → 常见排错点。</p>
+
+<div class="card" data-page-node-id="kEqZhHbpgGPre6itACI6DG">
+<b data-page-node-id="LP6muXHsiWtaF8SIk2ZZAu">这份文档怎么用（对应考核三条）</b>
+<ul data-page-node-id="B0FcF4CmvYM9lN7gUHXqYf">
+  <li data-page-node-id="Bkjt0FDu8bAtfzXHRZ5PGn"><b data-page-node-id="lbZ2B6kdMbh1CwatDVwziP">理解核心代码</b>：把每块的"核心代码 + 你怎么讲"读熟，能用自己的话复述。</li>
+  <li data-page-node-id="GbCjXFP0dQsKxN5m1sxMYB"><b data-page-node-id="smrrsPVotTIwGDzi5b8X7b">独立修改和排错</b>：每块末尾有"排错点"，去项目里故意制造一次错误再修掉（见"练手任务"）。</li>
+  <li data-page-node-id="H049FX6ALk436ZKJoehEb7"><b data-page-node-id="1xbqiJttg4UMdhEnGXh6sB">讲清实现过程</b>：例会/答辩时照"你怎么讲"那段口播即可，重点说清"每层解决什么问题"。</li>
+</ul>
+</div>
+
+<!-- ============ 模块一 ============ -->
+<h2 id="m1" data-page-node-id="KVoGu3vJViV52CX9ELh1iN">① 模块一：认证鉴权（JWT）</h2>
+<p data-page-node-id="E02oSjSEXa4RDr9WfFrRLV">这是整个项目<b data-page-node-id="VdrVFpGV39MDGNQZJiJ5x4">最该讲清</b>的一块，也是考核里"权限控制"的硬指标。先建立一个关键认知：</p>
+<div class="say" data-page-node-id="Cfcs7YJGD0nPyZeAetUAQv">
+<b data-page-node-id="CXVhoT7Yhj2nAgzLDlTQ8k">为什么不用传统的 Session，而用 JWT？</b><br data-page-node-id="wSYHK0HjNPg4Vl8ob5yeDQ">
+传统做法是登录后服务器开一个 session 存"谁登录了"，再给浏览器一个 cookie。问题是：服务器要存每个用户的会话状态，多台服务器就难同步。本项目用 JWT：登录成功后服务器<b data-page-node-id="H2dGJoweZlzWXNGN71dhXt">不存任何状态</b>，只发给你一个"签名过的令牌"，令牌里自带用户名和角色；之后你每次请求都带着它，服务器验一下签名就知道你是谁。这叫<b data-page-node-id="hGGb1ebh2N9QAX6vEbRP1N">无状态（stateless）</b>鉴权，方便以后横向扩展成多台服务器。
+</div>
+
+<h3 data-page-node-id="dJ1iIYuim3YCc9DjGlBuV8">文件清单与职责</h3>
+<table data-page-node-id="CsQCxdAyoBCxp67FDVv9XR">
+<tr data-page-node-id="GS7veBrrDcppgdPigOS6kB"><th data-page-node-id="nIA4SK8vpyrh0qBV0VPtwT">文件</th><th data-page-node-id="uLpMraSTP7yWVQgU78EiWj">角色</th><th data-page-node-id="XfBIEIqHMGM3cqRT8aX8Q9">一句话职责</th></tr>
+<tr data-page-node-id="JARZFXVKBlFvGfFk7m4tbw"><td data-page-node-id="DOa8eSFHZOF7YCGDAJyQxb"><span class="file" data-page-node-id="CTXwR0x6lWpmiOTzM1jC30">JwtUtil.java</span></td><td data-page-node-id="S33s4ybv8FN5X1AGVCQqN8">工具</td><td data-page-node-id="ka7FXGFS7FHPbz2ysBFH51">生成 token、校验 token 取出用户名</td></tr>
+<tr data-page-node-id="Dub0ZdGpp3CUeRmmLqWGv9"><td data-page-node-id="c112tsmAcHcGikjr9djuyR"><span class="file" data-page-node-id="8HhOOVWbQIW8pkNOeL9wce">JwtFilter.java</span></td><td data-page-node-id="WxhRGRFxytxyxmqANI3aJh">过滤器</td><td data-page-node-id="RPlmXwQ63E0eCMnEyv9C7R">每个请求进来先拦，验 token 后把用户放进安全上下文</td></tr>
+<tr data-page-node-id="X7Qeni1l4NoFx5eJNzp9Ur"><td data-page-node-id="pyaZfLJtInx9KypU2bm73A"><span class="file" data-page-node-id="bIBNKPf8XHX1mJsKlObzGM">SecurityConfig.java</span></td><td data-page-node-id="RSwQx1LdNv73luSpN2D4vN">配置</td><td data-page-node-id="1AgEAVYO1wZqKvjWWJ4j9O">规定哪些接口要登录、哪些放行、CORS、无状态</td></tr>
+<tr data-page-node-id="Cep51zBCtm2RNA1m2wyr4E"><td data-page-node-id="EcnrewhP3xAvIQrK8QDGLc"><span class="file" data-page-node-id="dGfChK0K0z4vvz5GRrgUWM">UserDetailsServiceImpl.java</span></td><td data-page-node-id="8SA2Sm14CriyetSjtzzRIn">服务</td><td data-page-node-id="npq3SL7CdGijl2B1mtomuB">告诉 Spring Security：用户存在哪、密码是什么、什么角色</td></tr>
+<tr data-page-node-id="lyBO9aQbfvCq2A80ME5IKl"><td data-page-node-id="6RYQT6NJwCrUamMxm1e3aN"><span class="file" data-page-node-id="m93b3xVXpbjdKbOuAKeHVV">GlobalExceptionHandler.java</span></td><td data-page-node-id="iBzHzEye658pRNwwrZdynz">异常处理</td><td data-page-node-id="TAjqIGphhLD6Lm9fuoS99A">业务抛的异常统一转成 400 + 提示，而不是 500/403</td></tr>
+<tr data-page-node-id="VwaXGEkxUlLeAsVHT0vuYr"><td data-page-node-id="Fd8DnEGJ85zEp65XkwER57"><span class="file" data-page-node-id="A3M69AJD4dKSCvbpFAtiQ0">AuthController.java / UserService.java</span></td><td data-page-node-id="L0fRZXC4p3bl3WoSw0k9S0">接口+业务</td><td data-page-node-id="S7NblBUnItzA9uNmMWsPx6">注册、登录两个接口</td></tr>
+</table>
+
+<h3 data-page-node-id="ccQ2huCaKHuAahMlb1uENe">核心代码 1：JwtUtil —— 签名与验签</h3>
+<pre data-page-node-id="aX5Pr4Mf9XHEiyUXy5H48Z"><span class="c" data-page-node-id="AVfyzRfDhFtlurGCVF4QAg">// 生成 token：把用户名和角色写进去，用 HS256 + 密钥签名</span>
+<span class="k" data-page-node-id="R32VP3s1RT1e33TAmHIAoZ">public</span> String generateToken(String username, String role) {
+    <span class="k" data-page-node-id="joCcyu676HYb5LYp3ZXWAZ">return</span> Jwts.builder()
+        .setSubject(username)
+        .claim(<span class="s" data-page-node-id="yHb0GsBruWzzlxiQUEEzjI">"role"</span>, role)
+        .setIssuedAt(<span class="k" data-page-node-id="UUccZuZjTAqrfcUawxGPFH">new</span> Date())
+        .setExpiration(<span class="k" data-page-node-id="9xdLfDnw68kypgmouJ6ZCV">new</span> Date(System.currentTimeMillis() + expiration))
+        .signWith(getKey(), SignatureAlgorithm.HS256)
+        .compact();
+}
+<span class="c" data-page-node-id="EgQM9NYsKG3Kd2ZStUNAIK">// 校验 token：用同一把密钥验证签名，返回用户名；签名不对就抛异常</span>
+<span class="k" data-page-node-id="hEcZPwvfJtrZCNhI6jbX0L">public</span> String validateAndGetUsername(String token) {
+    Claims claims = Jwts.parserBuilder()
+        .setSigningKey(getKey()).build()
+        .parseClaimsJws(token).getBody();
+    <span class="k" data-page-node-id="BncmWC7KV5WSkqtBjppFr6">return</span> claims.getSubject();
+}</pre>
+<div class="say" data-page-node-id="gnF4DjjDvrsGkEikIOYbzI"><b data-page-node-id="sZsc4T8xDyXptLSz8dVC1M">你怎么讲：</b>"token 本质上是一段被加密签名过的字符串，里面写了'这是谁、什么角色、何时过期'。服务器用私钥签名，别人改不了；以后每次请求服务器只要验证签名，就能相信 token 里的信息，所以不用在服务器存登录状态。"</div>
+
+<h3 data-page-node-id="zOKq459i7FfyVWkYBhMudG">核心代码 2：JwtFilter —— 每个请求都过这道关</h3>
+<pre data-page-node-id="OqwKOl6N7QPfmHJF4lLb09"><span class="k" data-page-node-id="SkjFOcmTDZV1aSICPMkclc">protected void</span> doFilterInternal(HttpServletRequest request, ...) {
+    String header = request.getHeader(<span class="s" data-page-node-id="gXcgO84U6GHFOZeWX7oL9o">"Authorization"</span>);
+    <span class="k" data-page-node-id="cqnIskmi2tdD1CQUSU1rsb">if</span> (header != <span class="k" data-page-node-id="kM7EQmz4TNq0lnqT7lUqfJ">null</span> && header.startsWith(<span class="s" data-page-node-id="VbVypGGELpkJQ4I9pOiRTI">"Bearer "</span>)) {
+        String token = header.substring(<span class="n" data-page-node-id="tg7LYz7WVbHJolBQjj0IQS">7</span>);
+        <span class="k" data-page-node-id="q4flR9yBUyPz0ukqhjrhJg">try</span> {
+            String username = jwtUtil.validateAndGetUsername(token);
+            UserDetails ud = userDetailsService.loadUserByUsername(username);
+            <span class="c" data-page-node-id="e8l94QyASIG6wB91sBWCxJ">// 把登录用户放进安全上下文，后面 Controller 才能取到"我是谁"</span>
+            SecurityContextHolder.getContext()
+                .setAuthentication(<span class="k" data-page-node-id="2TPt5onYg0sN6n13s5HYet">new</span> UsernamePasswordAuthenticationToken(ud, <span class="k" data-page-node-id="GWV4iEiyr4nXYHvaU7MsQH">null</span>, ud.getAuthorities()));
+        } <span class="k" data-page-node-id="ohHju6b0fsaGRW71VABBzv">catch</span> (RuntimeException e) { <span class="c" data-page-node-id="DtUr4LM8xqZJ2GO7Aqd1CX">/* 无效 token：当匿名，交给 Security 拦截 */</span> }
+    }
+    chain.doFilter(request, response);
+}</pre>
+<div class="bug" data-page-node-id="183cgK15mq1xdR0JRml689"><b data-page-node-id="JnwBGfyKnUTAHvFRk3djLA">排错点：</b>前端报 401/403，先看请求头里有没有 <code data-page-node-id="ccQSij4OOALzqbluvXPGbL">Authorization: Bearer xxx</code>。常见坑：① token 没存上（登录后没写本地存储）；② 复制 token 时把 "Bearer " 前后的空格弄丢了；③ token 过期（本项目默认 24 小时）。</div>
+
+<h3 data-page-node-id="sGAanuyKaopJTW0zNVTA2l">核心代码 3：SecurityConfig —— 放行规则</h3>
+<pre data-page-node-id="JuJPnGVHdSvXhqyvDwFolu">.authorizeHttpRequests(auth -> auth
+    .requestMatchers(<span class="s" data-page-node-id="8iCIftZuKax56no1wPt1s4">"/api/auth/**"</span>).permitAll()   <span class="c" data-page-node-id="gXSDBj4jAPjyDNpAxTKFpB">// 登录/注册不用鉴权</span>
+    .requestMatchers(<span class="s" data-page-node-id="hEZ9BlkYbU3XVzJ5NwT89o">"/h2-console/**"</span>).permitAll()  <span class="c" data-page-node-id="In2pkXoEHqT0xh09q4fk9E">// 数据库控制台</span>
+    .anyRequest().authenticated())                     <span class="c" data-page-node-id="8VQY9x3yC56G2ndbivDgiJ">// 其他一律要登录</span>
+.sessionManagement(sm -> sm.sessionCreationPolicy(STATELESS)) <span class="c" data-page-node-id="hkE4LNrs9EyCtoME1NuQOm">// 无状态</span>
+http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.<span class="k" data-page-node-id="vVcw2fKcckuHXL1z40oDuP">class</span>);</pre>
+<div class="say" data-page-node-id="R71Oop3BMh9Lu2FCC1Hlmc"><b data-page-node-id="jzm5CEMbaMAEni65J6kexg">你怎么讲：</b>"我在配置里把 <code data-page-node-id="j58q80PwlUQNy4jjzXhAOD">/api/auth/**</code> 设为放行，因为登录前你还没有 token；其余所有接口都要求已认证。并声明了 session 策略为无状态，配合上面的 JWT 过滤器工作。"</div>
+
+<h3 data-page-node-id="hDwRVLWszWVnVFsT0kiTHX">核心代码 4：UserService.login —— 业务串联</h3>
+<pre data-page-node-id="Fbgaeg4kUTIEIc3uHx23pk"><span class="k" data-page-node-id="ewbrjAQfH4CRG2Hu0DWKkD">public</span> AuthResponse login(LoginRequest req) {
+    authenticationManager.authenticate(           <span class="c" data-page-node-id="XIsTPsHfczXBMPj93iwdPd">// 1. 让 Spring Security 校验账密</span>
+        <span class="k" data-page-node-id="JnN54sHiFOZ7wH1YBs33RC">new</span> UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
+    User user = userRepository.findByUsername(req.getUsername()).orElseThrow();
+    String token = jwtUtil.generateToken(user.getUsername(), user.getRole()); <span class="c" data-page-node-id="3OA94veMDuH9N9BMHhIzjO">// 2. 签发</span>
+    <span class="k" data-page-node-id="4YZp7WrSAVyxVwEI4vuiXr">return new</span> AuthResponse(token, user.getUsername(), user.getRole());
+}</pre>
+<p data-page-node-id="lH7oySgQLQkWwLohYg6YMT">注册时密码用 <code data-page-node-id="9A8jpjmsfzF2krYIISs2s9">BCryptPasswordEncoder</code> 加密后才入库，所以数据库里看到的是乱码一样的哈希值，<b data-page-node-id="1yNQMZDHRJbA7GIzoPN8A3">不是明文</b>——这是安全底线，也是信安专业该点出来的点。</p>
+<div class="bug" data-page-node-id="SGfs7HdibIcLx3q1KPKwA3"><b data-page-node-id="QVGLCj5Dc8paiukoGuINlw">排错点：</b>登录一直失败，先确认数据库里密码是 BCrypt 哈希（应以 <code data-page-node-id="eT2eDvK0YlDwrXW1UtNZgS">$2a$</code> 开头）。如果直接往库里插明文密码，BCrypt 一定比对不上。</div>
+
+<!-- ============ 模块二 ============ -->
+<h2 id="m2" data-page-node-id="6rNNguByw2ycvCnAUyiJhS">② 模块二：分层架构（Controller / Service / Repository）</h2>
+<p data-page-node-id="MH3K3k9W8W61zy05skW8Bm">学长强调过：要理解"各层职责、各层如何协作"。这一块就是回答这个问题的。</p>
+<div class="say" data-page-node-id="syHkjW2C4cUw4uBCEf1ZuC">
+<b data-page-node-id="FLQKt8hgOT5Ulpt0B7Mevj">为什么要分层？</b><br data-page-node-id="oXEdCZ22TiQRcmE233sDnE">
+如果不分层，所有代码（接请求、算业务、存数据库）全堆在一个方法里，改一处容易炸一片。分层后各管一摊：
+<ul data-page-node-id="90ehNPcy3TwnTy0Fvacu45">
+<li data-page-node-id="xac0UK64BFmDzdD6Ns5WNE"><b data-page-node-id="qSiqM4CEhvVcWz9ED0df50">Controller（接口层）</b>：只管"接收请求、返回结果"，不写业务。</li>
+<li data-page-node-id="uDfkV0dZvR59opnNVBiGvj"><b data-page-node-id="1nhJ3N1c4uZzTcnyVPclNt">Service（业务层）</b>：写业务规则和权限判断，是项目的"大脑"。</li>
+<li data-page-node-id="fGmAnn7dSG5zNSE4ySgboD"><b data-page-node-id="UXnBF9pAuZVoZsozXqZ1Kb">Repository（数据层）</b>：只管"和数据库打交道"，由 JPA 自动实现，基本不用写 SQL。</li>
+<li data-page-node-id="lw0P9pUGAAQMRAYDjw7T94"><b data-page-node-id="wKkUkUAyc3V33gxvkqfdLv">Entity（实体）</b>：数据库表的 Java 映射，一张表对应一个类。</li>
+</ul>
+</div>
+
+<h3 data-page-node-id="2LyYu0R2DCQpw22qO1697G">实体：User / Textbook（对应两张表）</h3>
+<pre data-page-node-id="Doah9tNk5zKYi904YNLGg8"><span class="c" data-page-node-id="U1SHOyAOkyTanfSX9WoD4O">// User.java 对应 users 表</span>
+<span class="k" data-page-node-id="apwEIBQI0ERexg1YvyC1cl">@Entity</span> <span class="k" data-page-node-id="4DhRBASAMsbWTbgnw2nYBP">@Table</span>(name = <span class="s" data-page-node-id="fpDtMQBw1gEGud48jNDfxZ">"users"</span>)
+<span class="k" data-page-node-id="KBQOE8FFhQFrr38fNvz3oi">public class</span> User {
+    <span class="k" data-page-node-id="lod91BhHQB73KrPtGm6ZMQ">@Id</span> <span class="k" data-page-node-id="gG2ZCO3dDX4cqApCDA7ewD">@GeneratedValue</span>(strategy = IDENTITY) <span class="k" data-page-node-id="unuXaL8JR2hO8Y9x7cuQHm">private</span> Long id;
+    <span class="k" data-page-node-id="lYg72f5elw3lE8VTMuX6I4">@Column</span>(unique = <span class="k" data-page-node-id="booYYLYu3Vy0OMzk5QiEWB">true</span>, nullable = <span class="k" data-page-node-id="37lfIG4NSjcBSPpsePeiUg">false</span>) <span class="k" data-page-node-id="bD2hsvJxUIimL1v9YCuhXl">private</span> String username;
+    <span class="k" data-page-node-id="UkUKfZqVBTD9XvbxBFnTkz">@Column</span>(nullable = <span class="k" data-page-node-id="ts1MJ0iUxxj0imsUA529ey">false</span>) <span class="k" data-page-node-id="BEWtHaAYFzvVlOL18Va41u">private</span> String password;   <span class="c" data-page-node-id="ljZJol1E7O2hHURpQySaCA">// 存的是 BCrypt 哈希</span>
+    <span class="k" data-page-node-id="mBxdtIQV2BFkFC818hruro">private</span> String role = <span class="s" data-page-node-id="YiJ8AZyvE4BKhmt2zmSzk5">"USER"</span>;
+}
+<span class="c" data-page-node-id="GgKNbdEbmbZLvW31U2Rfh8">// Textbook.java 对应 textbooks 表，@ManyToOne 表示"一本教材属于一个用户"</span>
+<span class="k" data-page-node-id="A029AMcRawMzf4cs7A7YGx">@ManyToOne</span>(fetch = LAZY) <span class="k" data-page-node-id="8ItxmfoPVCPXxZKd9Gu2yG">@JoinColumn</span>(name = <span class="s" data-page-node-id="c2XEEtzdzTECkA68eDtn9Y">"owner_id"</span>)
+<span class="k" data-page-node-id="ZPJvSKlhFiSahuc1YqJXtJ">private</span> User owner;   <span class="c" data-page-node-id="NMcApbGrPZNXWeAs3h2WYY">// 发布者，外键关联 users 表</span></pre>
+
+<h3 data-page-node-id="7hrLDCxg7hx6DPWTX7vdcI">数据层：Repository（几乎零代码）</h3>
+<pre data-page-node-id="0gT4sSle97vcc2Q0wU9HBs"><span class="k" data-page-node-id="Lgv8ODUBtMIEFp3eR9NTfU">public interface</span> TextbookRepository <span class="k" data-page-node-id="x5eiI3BM7FWwuoaxLrgcfj">extends</span> JpaRepository&lt;Textbook, Long&gt; {
+    List&lt;Textbook&gt; findByOwnerId(Long ownerId);   <span class="c" data-page-node-id="NTbGcgLdC2OWWl0oEXLBBe">// 方法名即查询，JPA 自动实现</span>
+}</pre>
+<p data-page-node-id="AYw3rfjET4k97qQnHUWlXq">你只要写方法名（<code data-page-node-id="TWO3fJXTRbAYO2D9CMcKyq">findByOwnerId</code>），Spring Data JPA 就自动生成 SQL。这是"约定优于配置"。</p>
+
+<h3 data-page-node-id="vkh77JXJrh13rISZh1SBJm">业务层：BookService（权限判断写在这里）</h3>
+<pre data-page-node-id="NCvbhbqn5bU0JuihGeDeKM"><span class="k" data-page-node-id="xiVZ7Aw9oiBHngU0AD7qnl">public</span> Textbook create(Textbook textbook, String username) {
+    User owner = userRepository.findByUsername(username).orElseThrow(...);
+    textbook.setOwner(owner);              <span class="c" data-page-node-id="FPHgDBD8bzQyEgQUACElvl">// 自动把当前登录人设为发布者</span>
+    textbook.setStatus(<span class="s" data-page-node-id="zkZBPyNJocI3Ci2b1dUVlj">"AVAILABLE"</span>);   <span class="c" data-page-node-id="awDScmbyO16OdTY03RFFdd">// 新发布默认"在售"</span>
+    <span class="k" data-page-node-id="lco1ZQdE2CXibqaE5HFhHV">return</span> textbookRepository.save(textbook);
+}
+<span class="k" data-page-node-id="i0YuGVl8aY1XnVGiq0CxMk">public void</span> delete(Long id, String username) {
+    Textbook tb = textbookRepository.findById(id).orElseThrow(...);
+    <span class="k" data-page-node-id="Zv6dQCCzhEHyIJchsrA5wj">if</span> (tb.getOwner() == <span class="k" data-page-node-id="qcSp2Ye2BokWXzBrKtl29K">null</span> || !tb.getOwner().getUsername().equals(username))
+        <span class="k" data-page-node-id="O1TCZBLAaBtHypWptAU5bj">throw new</span> RuntimeException(<span class="s" data-page-node-id="eCvVKno3EgKMHpxgPvYzlj">"只能删除自己发布的教材"</span>);  <span class="c" data-page-node-id="HaceIKZwCWo2BLv5WHHDs2">// 权限校验</span>
+    textbookRepository.deleteById(id);
+}</pre>
+<div class="say" data-page-node-id="44Yk3B1V33kCUblNTFFUWq"><b data-page-node-id="MivHESCB7lmNfjPNIAp01i">你怎么讲：</b>"权限控制不是只靠登录，而是在业务层再做一遍归属判断。比如删除教材，我先查出这条记录，确认它的拥有者就是当前登录人，否则拒绝。这样即使有人猜到别人的教材 ID，也删不了。"</div>
+
+<h3 data-page-node-id="nkwc2BKJ1Dl6kLjmArsjAs">接口层：BookController（从 Authentication 取当前用户）</h3>
+<pre data-page-node-id="MZp94KvTcEbKo7yIOSumNB"><span class="k" data-page-node-id="ojjRn2FwOCTphGEqrBLlc3">@PostMapping</span>
+<span class="k" data-page-node-id="2KOcxEy2UPhN1ULDrvuOkn">public</span> Textbook create(<span class="k" data-page-node-id="tz7skETxKziyYq7ZHJFHSU">@RequestBody</span> Textbook textbook, Authentication authentication) {
+    <span class="k" data-page-node-id="vCHz7F9huMeAI5KkGxWlJp">return</span> bookService.create(textbook, authentication.getName()); <span class="c" data-page-node-id="HgWkq8i9s8vIWJ5xbaCAYt">// getName() 就是登录用户名</span>
+}
+<span class="k" data-page-node-id="7jABiRp0ncdUe9ZBEgVQiR">@GetMapping</span>(<span class="s" data-page-node-id="0wNuQykXDG1QVm8jBiWyei">"/me"</span>)
+<span class="k" data-page-node-id="xngsBwlDGP3MOCjf0FTXIr">public</span> List&lt;Textbook&gt; listMine(Authentication authentication) {
+    <span class="k" data-page-node-id="0affMhcNO3bnviFbCHBYKp">return</span> bookService.listMine(authentication.getName());
+}</pre>
+<div class="ok" data-page-node-id="JMO7yhhguL4xusDg3upDDS"><b data-page-node-id="Ny1XecjPCEP6H6ngmrHFoH">学会标准：</b>能说出"Controller 不写业务，只接收和转发；Service 写规则和权限；Repository 只碰数据库；Entity 是表结构"。<br data-page-node-id="NRz48NuEKFXmKbal9SG7R3">
+<b data-page-node-id="t8FCfzAmOp1wH3ZpfDZJ1j">学好标准：</b>能画出从浏览器到数据库的调用链，并解释为什么删除要在 Service 层判断归属而不是在 Controller 或前端判断。</div>
+
+<!-- ============ 模块三 ============ -->
+<h2 id="m3" data-page-node-id="roM2G9Du3a64TRqmmZ23pn">③ 模块三：前后端联调</h2>
+<p data-page-node-id="ppKJb1DHEuZVBjhUA01bDY">后端讲完，再看前端三件套：它们共同解决了"登录态怎么保存、请求怎么自动带 token、没登录怎么被拦回登录页"。</p>
+
+<h3 data-page-node-id="zdDk1hTrLqmOZ8m5y36Ac1">1) request.js —— 统一请求 + 自动带 token + 拦截异常</h3>
+<pre data-page-node-id="pv864OWJgCaytKwH9gkNN3"><span class="c" data-page-node-id="dr7oKSxR7R6abRLilU7SM0">// 请求拦截器：发请求前自动把 token 塞进请求头</span>
+request.interceptors.request.use(config => {
+  <span class="k" data-page-node-id="MaDdATnPAAV85bjrhQrHK2">const</span> token = <span class="f" data-page-node-id="08Wab5ajWbKMRG27uaWLDF">localStorage</span>.getItem(<span class="s" data-page-node-id="XNMnoX6B2FbmG4qVYxqEnU">'token'</span>);
+  <span class="k" data-page-node-id="LBTfZFcJLlcDCC4M7vCH5B">if</span> (token) config.headers.Authorization = <span class="s" data-page-node-id="KchJQGMPBptLhkn07dCbD7">`Bearer ${token}`</span>;
+  <span class="k" data-page-node-id="4h4L8QqnJtqLP8UYRIHAay">return</span> config;
+});
+<span class="c" data-page-node-id="HJ9lgp5atQ808TqsBhiVA8">// 响应拦截器：后端说 401/403（未登录或没权限），清掉本地状态并跳登录页</span>
+request.interceptors.response.use(res => res.data, err => {
+  <span class="k" data-page-node-id="7EcVvaPgu0Q3TiESGvZMtW">if</span> (err.response && [<span class="n" data-page-node-id="GjWzpwgaOG0BEKtdjw2yse">401</span>,<span class="n" data-page-node-id="ub1XtsZWzmFgeBaR7Jp3Al">403</span>].includes(err.response.status)) {
+    <span class="f" data-page-node-id="823OqeFer59Ufyj6gxygTp">localStorage</span>.removeItem(<span class="s" data-page-node-id="BgghVO9Zs7uXAED8hN7Kqp">'token'</span>); window.location.href = <span class="s" data-page-node-id="TDGrDrbqBAnASdMaEkbCsA">'/login'</span>;
+  }
+  <span class="k" data-page-node-id="Shtw7cliFlsgv8EFRqzRwL">return</span> Promise.reject(err);
+});</pre>
+<div class="bug" data-page-node-id="WYKAMXFusCxRizqE0KqCrQ"><b data-page-node-id="SgEdLkhqu7CRzXj00NENzN">排错点：</b>页面一直跳回登录页——八成是 token 丢了或过期；或者后端返回的是 403 但你以为应该是 200。打开浏览器 F12 → Network，看请求头里到底有没有 Authorization。</div>
+
+<h3 data-page-node-id="AZEDH6n4hXo39TEiwyhMke">2) auth.js —— Pinia 全局登录状态</h3>
+<pre data-page-node-id="139YKVZO7EGBVcMxkzVaEW"><span class="k" data-page-node-id="AxiRTVcl6XKrpwj4NHhqgv">export const</span> useAuthStore = defineStore(<span class="s" data-page-node-id="LvyK5F0JHdt87E8VJ6RBX7">'auth'</span>, {
+  state: () => ({ token: <span class="f" data-page-node-id="GwL4t20QBebcT3tDBcjTO1">localStorage</span>.getItem(<span class="s" data-page-node-id="AlI7VUIqaeupOn8ApG50Br">'token'</span>) || <span class="s" data-page-node-id="YSP2ihAA21hgjkt2vxhR8D">''</span>, username: ..., role: ... }),
+  getters: { isAuthenticated: s => !!s.token },
+  actions: {
+    <span class="k" data-page-node-id="BRQllJmCEUTqtF6u6jdSlR">async</span> login(username, password) {
+      <span class="k" data-page-node-id="pAfVEdVv2b5775xzRt7X3q">const</span> data = <span class="k" data-page-node-id="jeu3NvfpdAy9rVs3lvNCG7">await</span> request.post(<span class="s" data-page-node-id="bSyu3aU2I0M9eLecSGeH54">'/auth/login'</span>, { username, password });
+      <span class="k" data-page-node-id="5WCEquMURDu9oRk3ZkBD0t">this</span>.token = data.token; <span class="f" data-page-node-id="5W1YRCKzwEwDS573QEGGn5">localStorage</span>.setItem(<span class="s" data-page-node-id="Jg0vzgG74PgrewXYkFwQer">'token'</span>, data.token); <span class="c" data-page-node-id="3IaNK7b1fqUX59DI6myAJ7">// 同时存内存和本地</span>
+    },
+    logout() { <span class="k" data-page-node-id="QD9j0BLp2ZYfYDM0Bc0Pb0">this</span>.token = <span class="s" data-page-node-id="kI6l2s9pfrbnPsZ8Tcid6o">''</span>; <span class="f" data-page-node-id="2wyGREf3KBf4RAdnqIGXRx">localStorage</span>.removeItem(<span class="s" data-page-node-id="phKGFHvy4uS0F0J5lRqnC0">'token'</span>); }
+  }
+});</pre>
+<p data-page-node-id="rcMcBY0vu1YxAqo4VMRtuw">注意：token 同时存了<b data-page-node-id="RH1IAUa3gNIRcLoavMhZ40">内存（Pinia）</b>和<b data-page-node-id="cRRuIysF6kM6I79mBCJv6e">本地存储</b>两份。本地那份保证刷新页面后还登录着；内存那份供组件实时读取。</p>
+
+<h3 data-page-node-id="csZZiG6bSAO5TY1xuJ2zLg">3) router/index.js —— 路由守卫</h3>
+<pre data-page-node-id="1jE5ZJEu0LQlt1SumjGyB3">router.beforeEach((to, from, next) => {
+  <span class="k" data-page-node-id="bQuF2B6PG9CM3rN0Y8qs7e">const</span> auth = useAuthStore();
+  <span class="k" data-page-node-id="uoX26S5D5hv7lZq2HHGEzh">if</span> (to.meta.auth && !auth.isAuthenticated) next(<span class="s" data-page-node-id="L9MlueoaIuP96VaF83uzOS">'/login'</span>); <span class="c" data-page-node-id="46riA93mTA1Lh9EgTQoIej">// 标记要登录的页，未登录就踢回</span>
+  <span class="k" data-page-node-id="va50TcUpBhyYzH5D8ZzlBU">else</span> next();
+});</pre>
+<div class="say" data-page-node-id="Mu2qR0hNBvEFNExj9QFhru"><b data-page-node-id="PGp3gepmNR1LUPl83iJbc0">你怎么讲（一次发布的完整数据流）：</b>"我在发布页填表单 → axios 把数据 POST 到 <code data-page-node-id="kaidQ2I6ahWF9m2VbWvmmH">/api/books</code>，拦截器自动在请求头加上 Bearer token → 后端 JwtFilter 验过令牌，Controller 从安全上下文拿到我的用户名 → Service 把这条教材的拥有者设成我、状态设成在售 → Repository 存进数据库 → 返回新记录，前端刷新列表。整个过程前端不用关心'我是谁'，后端自己从 token 里认出来。"</div>
+
+<!-- ============ 自测 ============ -->
+<h2 id="self" data-page-node-id="TtOfOqf8r7F2futKF94OqK">自测清单：对着老师能讲清的 10 个问题</h2>
+<p data-page-node-id="0k2frvQQW8p7C13Ug5doIB">例会/答辩前，照着这 10 个问自己，能流畅答出 = 过关：</p>
+<div class="q" data-page-node-id="sUTIgVDTOehcqg5Zoqz1dS"><span class="no" data-page-node-id="6gzwYuHm6lcsGdA0LKuHwh">1</span><div data-page-node-id="MePTMlp6fqSiqtKSpfIuxL">JWT 和普通 Session 登录有什么区别？为什么本项目选 JWT？（关键词：无状态、不存服务器端会话）</div></div>
+<div class="q" data-page-node-id="jtAD9DazSMmVjbATaQmHMi"><span class="no" data-page-node-id="vl7RIYTjuIlbEoc7PDD9gu">2</span><div data-page-node-id="JMiZfGrNnlt7I7QvlEpa25">token 里都装了什么？服务器怎么知道 token 没被人篡改？（关键词：HS256 签名、密钥）</div></div>
+<div class="q" data-page-node-id="as7f5GDi8ANXfMJGsONlPN"><span class="no" data-page-node-id="Rzc6VeMd6pKtZxH38CojMh">3</span><div data-page-node-id="M21IMdgXY7I4UFQFxGZEjz">前端登录后 token 存哪了？每次请求怎么自动带上？</div></div>
+<div class="q" data-page-node-id="FFkBiTamqkIPctoT8MfA3P"><span class="no" data-page-node-id="wEf220EkqnYFHuCd4lYQDL">4</span><div data-page-node-id="aYFLgbJYkFJXfYxY0f9QNa">为什么明文密码不能直接存数据库？本项目怎么处理的？（关键词：BCrypt 哈希）</div></div>
+<div class="q" data-page-node-id="cvNrzEopdoklnPcY6gOrwm"><span class="no" data-page-node-id="38vdg71SbwPEdMmMYYdbTd">5</span><div data-page-node-id="2hhf8QVc18lm8H0bQkoehn">Controller / Service / Repository 各负责什么？为什么要分层？</div></div>
+<div class="q" data-page-node-id="n8RyhIaguITQbvx3IGL418"><span class="no" data-page-node-id="THn48Bs7ACYGapmtoAybbZ">6</span><div data-page-node-id="lQjoPCEFmm7EmZv1Ake4lI">删除教材时，怎么保证"只能删自己的"？这层判断写在哪？</div></div>
+<div class="q" data-page-node-id="ZgDjmdER0ld8MIIo3O7TPN"><span class="no" data-page-node-id="hu79gvZwicoPvL5zczhBYx">7</span><div data-page-node-id="jkcgbHnZC5WS49BIkuMwlt">没登录的人直接访问 <code data-page-node-id="1eYliDFfoUKixFn6F0auAZ">/books</code> 会怎样？被哪段代码拦下？</div></div>
+<div class="q" data-page-node-id="IJb7xg4TQ0PjIL0KcHL2lE"><span class="no" data-page-node-id="IphYiKGOfuLqPtxv7MIPdb">8</span><div data-page-node-id="RT2L1i8DvHiebFjjQxI1rM"><code data-page-node-id="5hqoHf8L086IHFYh7HqLD2">Textbook</code> 和 <code data-page-node-id="nXE5ivdaCP3swhPOBMlCoV">User</code> 是什么关系？体现在哪段注解？</div></div>
+<div class="q" data-page-node-id="waFQ1PHHFoBd9PaaJ8EQT2"><span class="no" data-page-node-id="2U2BfddBtEyqaPxXuqdKId">9</span><div data-page-node-id="cbYSJfdiZCDFQPN4G1DzsK">Repository 里 <code data-page-node-id="mjvc4u73sqGQtQ58m0GE2Z">findByOwnerId</code> 为什么不用写实现？</div></div>
+<div class="q" data-page-node-id="PPkVgcigiIHRgsu2rEoJtN"><span class="no" data-page-node-id="t7kGPdQHpYPERz4d0WgvQ2">10</span><div data-page-node-id="RjKd3Qtp2rprnRcGgxwezG">前后端是怎么"联调"起来的？一次发布请求的完整链路是什么？</div></div>
+
+<!-- ============ 练手 ============ -->
+<h2 id="next" data-page-node-id="qLlVWTeDqPfqMA92LKxO7n">练手任务（练"独立修改和排错"）</h2>
+<div class="card" data-page-node-id="YnMeF4CixEf7Zijn6rRGQn">
+<p data-page-node-id="B6eHeU6wk7Eo8JBrECr8ST">光看懂不够，考核要你能改能排错。按 ROI 挑一个做：</p>
+<ul data-page-node-id="er6pTo290eU64iAQm5Pd6F">
+<li data-page-node-id="nxPDlYF08XteM0h6BJBnHw"><b data-page-node-id="khys7ygDMZjs5zezF8Sn31">任务 A（改功能）</b>：给教材加一个"标记已售出"按钮。需要：① 在 <code data-page-node-id="y33ihmJKtC55kRmAKyEGZ4">Textbook</code> 实体确认 <code data-page-node-id="Ynn2y9Jf9Bs94sC8eSbO9i">status</code> 字段已支持 <code data-page-node-id="eLnmDeXtdTgyahQ57YWiGo">SOLD</code>；② 在 <code data-page-node-id="xwgTKd03Mr0AzSZGqGQSCt">BookService</code> 加一个 <code data-page-node-id="uq7SfJfS77a4eGFGACHozz">markSold(id, username)</code> 方法并校验归属；③ 在 <code data-page-node-id="AXg5RlzD9a68YevXokEa8H">BookController</code> 加一个 <code data-page-node-id="4yEL7dkj7s3YFgUWue0Xe5">@PutMapping("/{id}/sold")</code>；④ 前端在"我的发布"页加按钮调接口。做完你就练通了"全栈改一处功能"。</li>
+<li data-page-node-id="k3LpLG8y3Jvcn9VqE0KXJk"><b class="bug" style="background:none;border:none;padding:0" data-page-node-id="SsE2lM9xomGC7v50xTTcij">任务 B（故意排错）</b>：注册一个已存在的用户名，观察后端返回什么（应为 400 "用户名已存在"）；再删掉 <code data-page-node-id="6O3SKcJlM2ZxoIh0Bz6itS">GlobalExceptionHandler</code> 这个类重新编译，再注册一次，看返回变成什么（会变成 500/403）——这就直观理解了"为什么需要统一异常处理"。</li>
+<li data-page-node-id="IpuKvjSu8aGlk44ewB9yig"><b data-page-node-id="5BJaguN165DRCpLe4qqsHB">任务 C（部署）</b>：按 README 第五节把前后端部署到一台云服务器，对应考核"成功部署"那条。</li>
+</ul>
+</div>
+
+<p class="lead" style="margin-top:30px" data-page-node-id="rE39U64PQCEIH9G3BI7AAf">下一块建议：先拿"任务 A"练手（最能体现你独立改代码），做完我再带你过"部署"那一段，项目就完整可交了。</p>
+</div>
+</body>
+</html>
