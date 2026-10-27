@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f6fa;
+  color: #222;
+}
+.app { min-height: 100vh; }
+.nav {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 24px; background: #1f4e78; color: #fff;
+}
+.nav a { color: #fff; text-decoration: none; }
+.nav .logo { font-weight: 700; margin-right: auto; }
+.nav .user { opacity: .85; }
+.nav button {
+  background: rgba(255,255,255,.2); border: none; color: #fff;
+  padding: 4px 12px; border-radius: 4px; cursor: pointer;
+}
+.container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+.card {
+  background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+input, textarea, select {
+  width: 100%; padding: 9px 11px; margin: 6px 0;
+  border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+}
+button.primary {
+  background: #1f4e78; color: #fff; border: none;
+  padding: 9px 18px; border-radius: 6px; cursor: pointer;
+}
+button.plain {
+  background: #eee; color: #333; border: 1px solid #ccc;
+  padding: 5px 12px; border-radius: 6px; cursor: pointer;
+}
+.grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;
+}
